@@ -1,0 +1,37 @@
+/*
+
+Exemplo teste
+
+*/
+Algoritmo ex1
+Variaveis
+	inteiro a, b, c
+	caracter c1, c2, c3
+
+	funcao inteiro F1( inteiro ref p1, caracter p2)
+	variaveis
+		inteiro a, b, c
+	inicio
+		se a > b entao
+			a = c
+		senao
+			a = b
+		fim
+	fim
+
+	procedimento P1
+	variaveis
+		inteiro a, b, c
+	inicio
+		se a > b entao
+			a = c
+		senao
+			a = b
+		fim
+	fim
+
+inicio
+	f1(10)
+	p1
+
+fim.
