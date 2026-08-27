@@ -1,1 +1,1 @@
-[![Open in GitHub Codespaces][https://codespaces.new/flubacheski/Compiladores](https://codespaces.new/flubacheski/Compiladores)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/flubacheski/Compiladores)
