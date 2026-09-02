@@ -10,14 +10,19 @@ gcc miniLex.c -Wall -Og -g -o miniLex
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h> // atof
 
 // código interno atomo NUMERO
 typedef enum{
     ERRO,
     NUMERO,
     IDENTIFICADOR,
+    MULT, // *
+    SOMA, // +
     EOS
 }TAtomo;
+
+char *strAtomo[] = {"Erro lexico", "Constante Numerica", "Identificador","*", "+","Fim de buffer"};
 
 // Estrutura para comunicar com o analisador sintatico
 typedef struct{
@@ -31,10 +36,10 @@ typedef struct{
 
 
 // variavel global
-char *buffer ="  \n ab \n \n  12.1   var1 var2 ";
+char *buffer ="  \n* ab \n \n  + 12.1   var2 ";
 char lexema[20];
 int contaLinha;
-int reconhece_numero(void);
+void reconhece_numero(TInfoAtomo *info_atomo);
 void reconhece_id(TInfoAtomo *info_atomo);
 TInfoAtomo  obter_atomo(void);
 
@@ -48,17 +53,15 @@ int main(){
         // essa funcao sera chamada pelo analisador sintatico
         info_atomo = obter_atomo();
         
-        
+        printf("%d# %s ",info_atomo.linha, strAtomo[info_atomo.atomo] );
         if( info_atomo.atomo == NUMERO )
-            printf("%d# NUMERO | %s.\n",info_atomo.linha, lexema);
+            printf("| %f",info_atomo.atributo.numero);
         else if( info_atomo.atomo == IDENTIFICADOR )
-            printf("%d# IDENTIFICADOR | %s.\n",info_atomo.linha, info_atomo.atributo.ID);
-        else if( info_atomo.atomo == EOS )
-             printf("%d# EOS | %s.\n",info_atomo.linha, lexema);
-        else{
-            printf("%d: Erro Lexico.\n",info_atomo.linha);
+            printf("| %s", info_atomo.atributo.ID);
+        else if( info_atomo.atomo == ERRO )
             break;
-        }
+        printf("\n");
+        
     }
 
     printf("fim de programa.\n");
@@ -68,7 +71,7 @@ int main(){
 TInfoAtomo  obter_atomo(void){
     TInfoAtomo info_atomo;
     info_atomo.atomo = ERRO;
-    // elimina espacos 
+    // elimina espacos, faz a contagem de linhas 
     while(*buffer == ' ' || *buffer == '\n'){
         if(*buffer == '\n')
             contaLinha++; // variavel do lexico
@@ -76,12 +79,20 @@ TInfoAtomo  obter_atomo(void){
         buffer++; 
     }
 
-    if(*buffer == 0)
+    if(*buffer == 0) // final de buffer
         info_atomo.atomo = EOS;
-    else if( isdigit(*buffer))
-        info_atomo.atomo = reconhece_numero();
-    else if(islower(*buffer))
+    else if( isdigit(*buffer)) // reconhece numero
+        reconhece_numero(&info_atomo);
+    else if(islower(*buffer)) // reconhece id
         reconhece_id(&info_atomo);
+    else if(*buffer == '*'){
+        info_atomo.atomo = MULT;
+        buffer++;
+    }
+    else if(*buffer == '+'){
+        info_atomo.atomo = SOMA;
+        buffer++;
+    }
 
     info_atomo.linha = contaLinha;
     return info_atomo;
@@ -91,14 +102,14 @@ funcao implementa o automato para a expressao regular
 DIGITO -> 0|1|...|9 
 NUMERO -> DIGITO+.DIGITO+
 */
-int reconhece_numero(void){
+void reconhece_numero(TInfoAtomo *info_atomo){
     char *ini_lexema = buffer;
-
+    info_atomo->atomo = ERRO;
     if(isdigit(*buffer)){
         buffer++;
         goto q1;
     }
-    return ERRO;
+    return;
 
 q1:
     if( isdigit(*buffer) ){
@@ -109,27 +120,29 @@ q1:
         buffer++;
         goto q2;
     }
-    return ERRO;
+    return;
 
 q2:
     if( isdigit(*buffer) ){
         buffer++;
         goto q3;
     }
-    return ERRO;
+    return;
 q3:
     if( isdigit(*buffer) ){
         buffer++;
         goto q3;
     }
     if( isalpha(*buffer)){
-        return ERRO;
+        return;
     }
     // recorta lexema 
     strncpy(lexema,ini_lexema,buffer-ini_lexema);
     lexema[buffer-ini_lexema] = '\0';
+    info_atomo->atomo = NUMERO;
+    info_atomo->atributo.numero = atof(lexema);
 
-    return NUMERO;
+    return ;
 
 }
 // IDENTIFICADOR -> LETRA_MINUSCULA(LETRA_MINUSCULA|DIGITO)
