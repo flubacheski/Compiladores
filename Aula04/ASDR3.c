@@ -5,27 +5,48 @@ Gramatica na notacao BNF
 <fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
 
 Converter para notacao EBNF
+fatorar a esquerda
+<expressao>::=<expressao> ('+'<termo>|'-'<termo>) <termo>
+
+fatorar a direita
+<expressao>::= <expressao> ('+'|'-') <termo> !  <termo>
+
+eliminando a recursividade a esquerda
+<expressao>::= <termo> {('+'|'-') <termo>}
+
+<termo>::=<termo> ('*'|'/') <fator>|<fator>
+
+Gramatica notacao EBNF
+<expressao>::= <termo> {('+'|'-') <termo>}
+<termo>::=<fator> {('*'|'/') <fator>}
+<fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
 
 gcc ASDR3.c -o ASDR3
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 // variavel global do analisador lexico
-char *buffer ="+ac";
+char *buffer ="a+1*(b-3)"; // posfixa a 1 b 3 - * +
 
 // variavel global do analisador sintatico
 char lookahead;
 
-// E ::= a | b | +EE | *EE
-void E(); // prototipacao de funcao
+//<expressao>::= <termo> {('+'|'-') <termo>}
+//<termo>::=<fator> {('*'|'/') <fator>}
+//<fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
+// prototipacao de funcao
+void expressao(); 
+void termo();
+void fator();
 void consome( char atomo );
 
 int main(){
     printf("Analisando: %s => ",buffer);
     lookahead = *buffer++; //obter_átomo
-    E(); // chama o simbolo inicial da gramatica
+    expressao(); // chama o simbolo inicial da gramatica
 
     consome('\0');
 
@@ -43,24 +64,33 @@ void consome( char atomo ){
     }
 }
 
-// E ::= a | b | +EE | *EE
-void E(){
-    switch( lookahead ){
-        case '+':
-            consome('+');
-            E();E();
-            break;
-        case '*':
-            consome('*');
-            E();E();
-            break;
-        case 'a':
-            consome('a');
-            break;
-        default:
-            consome('b');
-
+//<expressao>::= <termo> {('+'|'-') <termo>}
+void expressao(){
+    termo();
+    while(lookahead == '+' || lookahead == '-'){
+        consome(lookahead);
+        termo();
     }
-
-
+}
+//<termo>::=<fator> {('*'|'/') <fator>}
+void termo(){
+    fator();
+    while(lookahead == '*' || lookahead == '/'){
+        consome(lookahead);
+        fator();
+    }
+}
+//<fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
+void fator(){
+    if(isdigit(lookahead)){
+        consome(lookahead);
+    }
+    else if(isalpha(lookahead)){
+        consome(lookahead);
+    }
+    else{
+        consome('(');
+        expressao();
+        consome(')');
+    }
 }
