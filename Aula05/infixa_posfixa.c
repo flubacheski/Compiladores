@@ -1,27 +1,12 @@
 /*
-Gramatica na notacao BNF
-<expressao>::=<expressao>'+'<termo>|<expressão>'-'<termo>|<termo>
-<termo>::=<termo> '*'<fator>|<termo>'/'<fator>|<fator>
-<fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
-
-Converter para notacao EBNF
-fatorar a esquerda
-<expressao>::=<expressao> ('+'<termo>|'-'<termo>) <termo>
-
-fatorar a direita
-<expressao>::= <expressao> ('+'|'-') <termo> |  <termo>
-
-eliminando a recursividade a esquerda
-<expressao>::= <termo> {('+'|'-') <termo>}
-
-<termo>::=<termo> ('*'|'/') <fator>|<fator>
 
 Gramatica notacao EBNF
 <expressao>::= <termo> {('+'|'-') <termo>}
 <termo>::=<fator> {('*'|'/') <fator>}
 <fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
 
-gcc ASDR3.c -o ASDR3
+Implementacao da gramatica que converte infixa para posfixa
+gcc infixa_posfixa.c -o infixa_posfixa
 */
 
 #include <stdio.h>
@@ -29,7 +14,9 @@ gcc ASDR3.c -o ASDR3
 #include <ctype.h>
 
 // variavel global do analisador lexico
-char *buffer ="a+1*((b-3)"; // posfixa a 1 b 3 - * +
+// char *buffer ="a+(b/9-3)*c"; // posfixa a b 9 / 3 - c * +
+//char *buffer ="a+b"; // posfixa a b +
+char *buffer;
 
 // variavel global do analisador sintatico
 char lookahead;
@@ -43,14 +30,21 @@ void termo();
 void fator();
 void consome( char atomo );
 
-int main(){
-    printf("Analisando: %s => ",buffer);
+int main(int nArgs, char **Args){
+    if( nArgs < 2 ){
+        printf("%s\nErro na chamada do programa\nuse: ./infixa_posfixa <expressao infixa>\n",Args[0]);
+        exit(1);
+    }
+    buffer = Args[1];
+    printf("infixa : %s\n",buffer);
+    printf("posfixa: ");
+    
     lookahead = *buffer++; //obter_átomo
     expressao(); // chama o simbolo inicial da gramatica
 
     consome('\0');
 
-    printf("fim de programa.\n");
+    printf("\n\nfim de programa.\n");
 
     return 0;
 }
@@ -68,24 +62,31 @@ void consome( char atomo ){
 void expressao(){
     termo();
     while(lookahead == '+' || lookahead == '-'){
+        char operador = lookahead;
         consome(lookahead);
         termo();
+        printf("%c",operador);
     }
 }
 //<termo>::=<fator> {('*'|'/') <fator>}
 void termo(){
     fator();
     while(lookahead == '*' || lookahead == '/'){
+        char operador = lookahead;
         consome(lookahead);
         fator();
+        printf("%c",operador);
+
     }
 }
 //<fator>::='a'|'b'|'c'|...|'1'|'2'|'3'|...|'('<expressão>')'
 void fator(){
     if(isdigit(lookahead)){
+        printf("%c",lookahead);
         consome(lookahead);
     }
     else if(isalpha(lookahead)){
+        printf("%c",lookahead);
         consome(lookahead);
     }
     else{
