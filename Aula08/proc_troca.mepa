@@ -1,0 +1,28 @@
+   INPP
+   AMEM 2
+   DSVS L1
+L2:NADA
+   ENPR
+   AMEM 1  
+   CRVI 1,-4
+   ARMZ 1,0
+   CRVI 1,-3
+   ARMI 1,-4
+   CRVL 1,0
+   ARMI 1,-3
+   DMEM 1
+   RTPR 2
+L1:NADA
+   LEIT
+   ARMZ 0,0
+   LEIT 
+   ARMZ 0,1
+   CREN 0,0
+   CREN 0,1
+   CHPR
+   CRVL 0,0
+   IMPR
+   CRVL 0,1
+   IMPR
+   DMEM 2
+   PARA
